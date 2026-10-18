@@ -1,37 +1,42 @@
 package sortbench.util;
 
-import sortbench.algorithms.SortAlgorithm;
+import sortbench.algorithms.*;
 import sortbench.model.Resultado;
+
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Classe responsável por orquestrar a execução dos benchmarks de ordenação.
+ */
 public class ExecutorBenchmark {
 
-    // Executa os testes automatizados para os algoritmos e tamanhos informados
-    public static List<Resultado> executarTestes(List<SortAlgorithm> algoritmos, int[] tamanhos) {
-        List<Resultado> listaResultados = new ArrayList<>();
+    /**
+     * Executa a bateria completa de testes exigidos pela APS da UNIP.
+     */
+    public static List<Resultado> executarTestesCompletos(int tamanho) {
+        List<SortAlgorithm> algoritmos = new ArrayList<>();
+        algoritmos.add(new InsertionSort());
+        algoritmos.add(new MergeSort());
+        algoritmos.add(new HeapSort());
+        algoritmos.add(new QuickSortDualPivot());
+        algoritmos.add(new TimSortAdapter());
 
-        // Percorre cada algoritmo
-        for (SortAlgorithm algoritmo : algoritmos) {
-            
-            // Testa o algoritmo para cada tamanho de vetor
-            for (int tamanho : tamanhos) {
-                
-                // Cenário 1: Vetor com números aleatórios
-                int[] vetorAleatorio = GeradorDeVetores.gerarAleatorio(tamanho);
-                listaResultados.add(algoritmo.executar(vetorAleatorio, "Aleatório"));
+        List<Resultado> resultados = new ArrayList<>();
 
-                // Cenário 2: Vetor já ordenado
-                int[] vetorOrdenado = GeradorDeVetores.gerarOrdenado(tamanho);
-                listaResultados.add(algoritmo.executar(vetorOrdenado, "Ordenado"));
+        // Gerar os 4 cenários experimentais oficiais exigidos pela APS
+        int[] aleatorio = GeradorDeVetores.gerarAleatorio(tamanho);
+        int[] crescente = GeradorDeVetores.gerarCrescente(tamanho);
+        int[] decrescente = GeradorDeVetores.gerarDecrescente(tamanho);
+        int[] duplicados = GeradorDeVetores.gerarComDuplicados(tamanho);
 
-                // Cenário 3: Vetor em ordem decrescente
-                int[] vetorDecrescente = GeradorDeVetores.gerarDecrescente(tamanho);
-                listaResultados.add(algoritmo.executar(vetorDecrescente, "Decrescente"));
-            }
+        for (SortAlgorithm alg : algoritmos) {
+            resultados.add(alg.executar(aleatorio, "Aleatório"));
+            resultados.add(alg.executar(crescente, "Ordenado (Melhor Caso)"));
+            resultados.add(alg.executar(decrescente, "Invertido (Pior Caso)"));
+            resultados.add(alg.executar(duplicados, "Com Duplicados (~40%)"));
         }
 
-        // Retorna a lista com todas as métricas recolhidas
-        return listaResultados;
+        return resultados;
     }
 }
